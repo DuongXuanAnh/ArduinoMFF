@@ -1,13 +1,25 @@
-Napište program pro Arduino UNO s pøipojenım Funshieldem, kterı bude animovat níe popsanı vzor na ètyøech vertikálních LED diodách.
-V kadém okamiku svítí právì jedna dioda ze 4, na poèátku je to LED umístìná nejvıše.
-V kadém kroku animace se aktivní LED posune o jedna níe.
-Kdy dorazí na spodek, odrazí se a vrací se krok za krokem zpìt nahoru. 
-Nahoøe se opìt odrazí a celı cyklus se opakuje do nekoneèna.
+NapiÅ¡te program pro Arduino UNO s pÅ™ipojenÃ½m Funshieldem, kterÃ½ bude animovat nÃ­Å¾e popsanÃ½ vzor na ÄtyÅ™ech vertikÃ¡lnÃ­ch LED diodÃ¡ch.
+V kaÅ¾dÃ©m okamÅ¾iku svÃ­tÃ­ prÃ¡vÄ› jedna dioda ze 4, na poÄÃ¡tku je to LED umÃ­stÄ›nÃ¡ nejvÃ½Å¡e.
+V kaÅ¾dÃ©m kroku animace se aktivnÃ­ LED posune o jedna nÃ­Å¾e.
+KdyÅ¾ dorazÃ­ na spodek, odrazÃ­ se a vracÃ­ se krok za krokem zpÄ›t nahoru. 
+NahoÅ™e se opÄ›t odrazÃ­ a celÃ½ cyklus se opakuje do nekoneÄna.
 
-Jeden krok animace trvá pøesnì 300ms. 
-Ve vašem øešení, ale nesmíte pouívat funkci delay(), ani delayMicroseconds(), ani jinak blokovat hlavní smyèku. 
-K mìøení uplynulého èasu pouijte funkci millis().
+Jeden krok animace trvÃ¡ pÅ™esnÄ› 300ms. 
+Ve vaÅ¡em Å™eÅ¡enÃ­, ale nesmÃ­te pouÅ¾Ã­vat funkci delay(), ani delayMicroseconds(), ani jinak blokovat hlavnÃ­ smyÄku. 
+K mÄ›Å™enÃ­ uplynulÃ©ho Äasu pouÅ¾ijte funkci millis().
 
-Pro lepší pøedstavu se podívejte na toto video, kde je zachyceno vzorové øešení.
+Pro lepÅ¡Ã­ pÅ™edstavu se podÃ­vejte na toto video, kde je zachyceno vzorovÃ© Å™eÅ¡enÃ­.
+
+==========================================================================================================
+
+Write a program for Arduino UNO with attached Funshield, which will animate the following pattern on the four vertical LEDs. 
+At any given moment, exactly one LED (of four) is turned on (we are starting with the topmost one). 
+In each step of the animation, the active LED moves one slot down. 
+When it hits the bottom, it bounces and moves upwards again, until it reaches top. 
+The animation repeats itself forever.
+
+One step of the animation takes exactly 300ms. 
+Do not use delay() nor delayMicroseconds() function and do not block the main loop by other means. 
+Use millis() function to measure, how much time actually passed.
 
 
