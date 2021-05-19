@@ -5,6 +5,9 @@ Design and implement a Stopwatch based on Arduino UNO with attached Funshield. T
 
 The stopwatch is always in one of three logical states (`stopped`,  `running`, or  `lapped`). In the  `stopped`  state, internal clock are not advanced and the display is showing the last measured value (this state is also the initial state after boot). In the  `running`  state, the internal clock is measuring passed time and the value on the display is updated continuously. In the  `lapped`  state, the stopwatch is still running (collecting time), but the display is frozen -- showing the value which was actual when the lapped state was initiated. The transition diagram looks as follows:
 
+![schema.png](https://github.com/DuongXuanAnh/ArduinoMFF/blob/main/05%20-%20Arduino%20Stopwatch/schema.png?raw=true)
+
+
 -   **Button 1**  performs the start/stop function. It has no bearing in the  `lapped`  state.
 -   **Button 2**  freezes/unfreezes (laps/un-laps) the time. It has no bearing in the  `stopped`  state.
 -   **Button 3**  works only in the  `stopped`  state and it resets the stopwatch (sets internal time counter to 0).
