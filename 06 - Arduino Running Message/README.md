@@ -1,31 +1,45 @@
 
-Design and implement a Stopwatch based on Arduino UNO with attached Funshield. The stopwatch must measure the time internally in milliseconds and display the measured values on the 7-segment LED display with 0.1s precision (including the decimal dot, rounding down). The number should be displayed in regular decadic format used in Czech Republic (no leading zeros except one right before the decimal dot). The stopwatch is zeroed at the beginning (i.e., displaying only  `0.0`  aligned right).
+The objective of this assignment is to turn funshield into a message notification panel. It receives messages from the computer (via USB serial link) and displays them on the 7-seg LED display as running text (i.e., text which is scrolling from right to left).
 
-### Stopwatch Controls
+The starter pack can be  [downloaded here](https://recodex.mff.cuni.cz/api/v1/uploaded-files/b69a61fe-abf8-11eb-a1a9-005056ad4f31/download). The  `solution.ino`  already holds constants for individual letter glyphs (`a`-`z`) and a basic function that displays them individually. Please note that we do not distinguish between lowercase and uppercase since we had to mix these two to get recognizable glyphs. All non-letter characters are displayed as empty space (blank position).
 
-The stopwatch is always in one of three logical states (`stopped`,  `running`, or  `lapped`). In the  `stopped`  state, internal clock are not advanced and the display is showing the last measured value (this state is also the initial state after boot). In the  `running`  state, the internal clock is measuring passed time and the value on the display is updated continuously. In the  `lapped`  state, the stopwatch is still running (collecting time), but the display is frozen -- showing the value which was actual when the lapped state was initiated. The transition diagram looks as follows:
+The starter pack also contains header file  `input.h`  with  `SerialInputHandler`  structure (class) that encapsulates processing of the serial input. Its  `initialize()`  method must be invoked in  `setup()`  and  `updateInLoop()`  method in every  `loop()`. At the beginning and at the conclusion of scrolling of every message, the  `getMessage()`  will provide you with the next message to be displayed. The structure keeps the last message internally and it will return it until the next message is sent over.
 
-![schema.png](https://github.com/DuongXuanAnh/ArduinoMFF/blob/main/05%20-%20Arduino%20Stopwatch/schema.png?raw=true)
+Submit  **only the  `solution.ino`**  file (the name must match exactly) in ReCodEx. File  `input.h`  (on the other hand) must  **not**  be submitted as ReCodEx will provide  `SerialInputHandler`  implementation of its own designed for testing. As usual, do  **not**  use  `delay()`  nor  `delayMicroseconds()`  function and do not block the main loop by other means.
 
+### Displaying the Message
 
--   **Button 1**  performs the start/stop function. It has no bearing in the  `lapped`  state.
--   **Button 2**  freezes/unfreezes (laps/un-laps) the time. It has no bearing in the  `stopped`  state.
--   **Button 3**  works only in the  `stopped`  state and it resets the stopwatch (sets internal time counter to 0).
+Each message starts its scrolling when the display is empty (showing four empty spaces). The message moves from right to left and the interval between two shifts is exactly  `300 ms`. At the end, the message must entirely leave the display (i.e., as if there are 4 spaces at the end of every message). Thus, the display is rendered empty before the next message starts to scroll.
 
-See  [this video](https://youtu.be/wT15zxqQthM), which visualize the reference solution, to get a better idea.
+Please beware, the message may have less then 4 characters or it may be even empty. Nevertheless, it is still displayed using the same algorithm (i.e., empty string will actually cause the display to stay empty for  `1200 ms`).
 
-**Warning:**  If you decide to implement button debouncing as well (not explicitly required here), please bear in mind that this assignment is tested beyond human capabilities in ReCodEx. Namely, we are using rather extreme timing for button actions. However, you can rely on the fact that the shortest button downtime or uptime (i.e., time between two subsequent button events) would be at least  `50ms`.
+_Example:_  the intermediate display states for message  `CAKE IS A LIE`  will look like the following (character  `_`  stands for an empty position).
 
-### Multiplexing the Display
+```
+___C
+__CA
+_CAK
+CAKE
+AKE_
+KE_I
+E_IS
+_IS_
+IS_A
+S_A_
+_A_L
+A_LI
+_LIE
+LIE_
+IE__
+E___
+____
 
-We need to solve the matrix-control issue of the 7-seg LED display, so we can display arbitrary numbers on it. The problem is that the shift register can hold only one glyph at a time, but we might need to display different digits at individual positions. For this purpose we employ technique called  _time multiplexing_. Each position will be given a short time slot when its value is being displayed and these slots are alternating in rapid order. If the frequency is high enough, the human eye would not be able to recognize the slot changes and would be convinced that all positions are active simultaneously. The main idea is captured at the end of  [this video](https://youtu.be/Nwst00RFC58).
+```
 
-_Example:_  we would like to display  `1234`. Hence, we will be displaying a sequence  `1___`,  `_2__`,  `__3_`, and  `___4`  in a loop (`_`  denotes blank position). To achieve best result, each slot should take the same time on average.
+Once the scrolling of a message is concluded, the application requests the following message using  `getMessage()`  method and starts displaying it immediately. The empty display is shown as one intermediate state between two (nonempty) messages (i.e., for  `300 ms`). Use time multiplexing you have learned in the previous assignment to display different characters at different positions.
 
-In some situations, it might be possible to optimize the algorithm. For instance, number  `4254`  can be displayed using only three slots (`4__4`,  `_2__`, and  `__5_`) since the shift registers can allow the same digit to be visible at multiple positions simultaneously. However, this optimization  **is not required no recommended**. We would encourage you to divert your effort and attention to the  **correct code decomposition**  so you separate the display management and the stopwatch application (and the buttons handling) as much as possible. That way you could re-use some parts of your code in the future assignments.
+### Testing
 
-### Submitting into ReCodEx
+You may use  _Serial Monitor_  tool from Arduino IDE (menu  `Tools`  >  `Serial Monitor`), which some of you probably already use for debugging. The monitor allows for bidirectional communication. There is a text input box accompanied with  _Send_  button for sanding text lines over to Arduino device. The  `SerialInputHandler`  remembers only the last received message, so if you input multiple messages in short order, some of them may not be displayed at all.
 
-Submit  **only the  `solution.ino`**  file (the name must match exactly) in ReCodEx. The skeleton starter pack can be  [downloaded here](https://recodex.mff.cuni.cz/api/v1/uploaded-files/fba912cf-95f6-11eb-a1a9-005056ad4f31/download). It also includes necessary constants for controlling 7-seg. display, namely how the numbers should look like on the display.
-
-Do  **not**  use  `delay()`  nor  `delayMicroseconds()`  function and do not block the main loop by other means. Use  `millis()`  function to measure, how much time actually passed. Use the supplied  [funshield.h](https://www.ksi.mff.cuni.cz/teaching/nswi170-web/download/Funshield.zip)  library in your solution for the pin identification constants (and related stuff).
+See  [this video](https://youtu.be/YCbglNdO1Xo), which visualize the reference solution, to get a better idea.
