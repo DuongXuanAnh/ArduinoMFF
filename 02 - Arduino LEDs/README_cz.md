@@ -1,10 +1,8 @@
+Napište program pro Arduino UNO s připojeným Funshieldem, který bude animovat níže popsaný vzor na čtyřech vertikálních LED diodách. V každém okamžiku svítí právě jedna dioda ze 4, na počátku je to LED umístěná nejvýše. V každém kroku animace se aktivní LED posune o jedna níže. Když dorazí na spodek, odrazí se a vrací se krok za krokem zpět nahoru. Nahoře se opět odrazí a celý cyklus se opakuje do nekonečna.
 
-Write a program for Arduino UNO with attached Funshield, which will animate the following pattern on the four vertical LEDs. At any given moment, exactly one LED (of four) is turned on (we are starting with the topmost one). In each step of the animation, the active LED moves one slot down. When it hits the bottom, it bounces and moves upwards again, until it reaches top. The animation repeats itself forever.
+Jeden krok animace trvá přesně 300ms. Ve vašem řešení, ale nesmíte používat funkci delay(), ani delayMicroseconds(), ani jinak blokovat hlavní smyčku. K měření uplynulého času použijte funkci millis().
 
-One step of the animation takes exactly 300ms. Do  **not**  use  `delay()`  nor  `delayMicroseconds()`  function and do not block the main loop by other means. Use  `millis()`  function to measure, how much time actually passed.
+Pro lepší představu se podívejte na toto video, kde je zachyceno vzorové řešení.
 
-See  [this video](https://youtu.be/5-UuEkL5oxI), which visualize the reference solution, to get a better idea.
-
-### Submitting into ReCodEx
-
-Submit  **only the  `solution.ino`**  file (the name must match exactly) in ReCodEx. The skeleton starter pack can be  [downloaded here](https://recodex.mff.cuni.cz/api/v1/uploaded-files/8d4ebc7b-6adc-11eb-a1a9-005056ad4f31/download). Use the supplied  [funshield.h](https://www.ksi.mff.cuni.cz/teaching/nswi170-web/download/Funshield.zip)  library in your solution for the pin identification constants (and related stuff).
+Odevzdání do ReCodExu
+Do ReCodExu odevzdávejte pouze soubor solution.ino (musí být pojmenovaný přesně takto). Předpřipravený startovací balíček si můžete stáhnout zde. Ve vašem řešení použijte dodanou knihovnu funshield.h. Pro identifikátory pinů (a související věci) nevytvářejte si vlastní konstanty ani nepoužívejte číselné literály, ale výhradně jen konstanty z knihovny funshield.h.
