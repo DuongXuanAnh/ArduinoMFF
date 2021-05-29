@@ -14,32 +14,31 @@ int lastState1 = notPressed;
 int lastState2 = notPressed;
 
 int num = 0;
+const size_t displayNumberTo = 16; // nase cisla budou mensi nez 16;
 
 unsigned long previousMillis1 = 0, pressTime1 = 0;
 unsigned long previousMillis2 = 0, pressTime2 = 0;
 
-bool timerPeriodicDelay1(unsigned long period) {
+bool timerPeriodicDelay(unsigned long period, size_t buttonNumber) {
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis1 >= period) {
-    previousMillis1 = currentMillis;
-    return true;
+  if(buttonNumber == 1){
+      if (currentMillis - previousMillis1 >= period) {
+      previousMillis1 = currentMillis;
+      return true;
+    }
   }
+  else if(buttonNumber == 2){
+      if (currentMillis - previousMillis2 >= period) {
+      previousMillis2 = currentMillis;
+      return true;
+    }
+  }
+  
   return false;
 }
-
-bool timerPeriodicDelay2(unsigned long period) {
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis2 >= period) {
-    previousMillis2 = currentMillis;
-    return true;
-  }
-  return false;
-}
-
 
 void dislayNumber(int num) {
-   num = num % 16;
+   num = num % displayNumberTo; // Zajisti aby number byl < 16
 //  Serial.println(num);
   for (size_t i = 0; i < ledPinsCount; i++) {
       size_t state = bitRead(num, i); // state = 0 nebo 1     
@@ -89,7 +88,7 @@ void increment(int button){
   else if (holding) {
     unsigned long currentTime = millis();
     if(currentTime - pressTime1 >= activationDelay){
-      if(timerPeriodicDelay1(periodicDelay)){
+      if(timerPeriodicDelay(periodicDelay, 1)){
         num++;
         dislayNumber(num);
       }
@@ -111,7 +110,7 @@ void decrement(int button){
   else if (holding) {
     unsigned long currentTime = millis();
     if(currentTime - pressTime2 >= activationDelay){
-      if(timerPeriodicDelay2(periodicDelay)){
+      if(timerPeriodicDelay(periodicDelay, 2)){
         num--;
         dislayNumber(num);
       }
