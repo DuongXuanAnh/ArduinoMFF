@@ -1,135 +1,100 @@
 #include "funshield.h"
 
-constexpr int buttonPins[] {button1_pin, button2_pin};
 constexpr int ledPins[] { led1_pin, led2_pin, led3_pin, led4_pin };
 constexpr int ledPinsCount = sizeof(ledPins) / sizeof(ledPins[0]);
+constexpr int buttonPins[] { button1_pin, button2_pin };
+constexpr int buttonPinsCount = sizeof(buttonPins) / sizeof(buttonPins[0]);
 
 constexpr int activationDelay = 1000; // how long before button starts to perform periodic updates [ms]
 constexpr int periodicDelay = 300; // delay between consecutive periodic updates [ms]
 
-constexpr bool pressed = true;
-constexpr bool notPressed = false;
+//---------------------------------------------------------
+size_t num = 0;
+const size_t modulo = 16; // Nase cislo num nebude vetzi nez hodnota modulo
 
-int lastState1 = notPressed;
-int lastState2 = notPressed;
+bool btn1_notPressYet = true; // promnena pro kratke smacknuti
+unsigned long timerOneSecond = 0;
+unsigned long timerDelay = 0;
 
-int num = 0;
-const size_t displayNumberTo = 16; // nase cisla budou mensi nez 16;
+bool btn2_notPressYet = true; // promnena pro kratke smacknuti
+unsigned long timerOneSecond2 = 0;
+unsigned long timerDelay2 = 0;
 
-unsigned long previousMillis1 = 0, pressTime1 = 0;
-unsigned long previousMillis2 = 0, pressTime2 = 0;
-
-bool timerPeriodicDelay(unsigned long period, size_t buttonNumber) {
-  unsigned long currentMillis = millis();
-  if(buttonNumber == 1){
-      if (currentMillis - previousMillis1 >= period) {
-      previousMillis1 = currentMillis;
-      return true;
+class NumberManager{
+  public:
+    size_t increamentNumber(size_t number){
+      return (number+1) % modulo;
     }
-  }
-  else if(buttonNumber == 2){
-      if (currentMillis - previousMillis2 >= period) {
-      previousMillis2 = currentMillis;
-      return true;
+    size_t decreamentNumber(size_t number){
+      return (number-1) % modulo;
     }
-  }
-  
-  return false;
-}
 
-void dislayNumber(int num) {
-   num = num % displayNumberTo; // Zajisti aby number byl < 16
-//  Serial.println(num);
-  for (size_t i = 0; i < ledPinsCount; i++) {
-      size_t state = bitRead(num, i); // state = 0 nebo 1     
-      if (state == 0) {
-        digitalWrite(ledPins[ledPinsCount-i-1],OFF); 
-      } else {
-        digitalWrite(ledPins[ledPinsCount-i-1], ON);
+    void dislayNumber(int num) {
+    for (size_t i = 0; i < ledPinsCount; i++) {
+        size_t state = bitRead(num, i); // state = 0 nebo 1     
+        if (state == 0) {
+          digitalWrite(ledPins[ledPinsCount-i-1],OFF); 
+        } else {
+          digitalWrite(ledPins[ledPinsCount-i-1], ON);
+        }
       }
-    }
+  }    
+};
 
-}
-
-bool isButtonPressed(int button) {
-  int state = digitalRead(button);
-  if (!state) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool buttonStateChangePress(bool curr_state, bool lastState) {
-  if (lastState == notPressed && curr_state == pressed) return true;
-  else return false;
-}
-
-bool buttonStateChangeRelease(bool curr_state, bool lastState) {
-  if (lastState == pressed && curr_state == notPressed) return true;
-  else return false;
-}
-
-bool isButtonHeld(bool cur_state, bool lastState) {
-  if (lastState == pressed && cur_state == pressed) return true;
-  else return false;
-}
-
-void increment(int button){
-  bool currentState = isButtonPressed(button);
-  bool buttonIsPressed = buttonStateChangePress(currentState, lastState1);
-  bool holding = isButtonHeld(currentState, lastState1);
-
-  if (buttonIsPressed) {
-    num++;
-    dislayNumber(num);
-    pressTime1 = millis();
-  }
-  else if (holding) {
-    unsigned long currentTime = millis();
-    if(currentTime - pressTime1 >= activationDelay){
-      if(timerPeriodicDelay(periodicDelay, 1)){
-        num++;
-        dislayNumber(num);
-      }
-    }
-  }
-  lastState1 = currentState;
-}
-
-void decrement(int button){
-  bool currentState = isButtonPressed(button);
-  bool buttonIsPressed = buttonStateChangePress(currentState, lastState2);
-  bool holding = isButtonHeld(currentState, lastState2);
-
-  if (buttonIsPressed) {
-    num--;
-    dislayNumber(num);
-    pressTime2 = millis();
-  }
-  else if (holding) {
-    unsigned long currentTime = millis();
-    if(currentTime - pressTime2 >= activationDelay){
-      if(timerPeriodicDelay(periodicDelay, 2)){
-        num--;
-        dislayNumber(num);
-      }
-    }
-  }
-  lastState2 = currentState;
-}
+NumberManager numManager;
 
 void setup() {
 //  Serial.begin(9600);
+  for (int i = 0; i < buttonPinsCount; ++i) {
+    pinMode(buttonPins[i], INPUT);
+  }
   for (int i = 0; i < ledPinsCount; ++i) {
     pinMode(ledPins[i], OUTPUT);
     digitalWrite(ledPins[i], OFF);
   }
-  pinMode(button1_pin, INPUT);
-  pinMode(button2_pin, INPUT);
+}
+
+void btn1(){
+  if(digitalRead(buttonPins[0]) == ON){ // Jestli btn1 je smacknuty
+      if(btn1_notPressYet){ // Press kratce
+        num = numManager.increamentNumber(num);
+        numManager.dislayNumber(num);
+        btn1_notPressYet = false;
+      }
+      if((unsigned long) millis() - timerOneSecond >= activationDelay){ // Jestli btn1 je drzeny vic jak 1 sekundu
+        if((unsigned long) millis() - timerDelay >= periodicDelay){
+          num = numManager.increamentNumber(num);
+          numManager.dislayNumber(num);
+          timerDelay = millis();
+        }
+      }
+    }else{
+      btn1_notPressYet = true;
+      timerOneSecond = millis();
+    }
+}
+
+void btn2(){
+   if(digitalRead(buttonPins[1]) == ON){ // Jestli btn2 je smacknuty
+      if(btn2_notPressYet){ // Press kratce
+        num = numManager.decreamentNumber(num);
+        numManager.dislayNumber(num);
+        btn2_notPressYet = false;
+      }
+      if((unsigned long) millis() - timerOneSecond2 >= activationDelay){ // Jestli btn2 je drzeny vic jak 1 sekundu
+        if((unsigned long) millis() - timerDelay2 >= periodicDelay){
+          num = numManager.decreamentNumber(num);
+          numManager.dislayNumber(num);
+          timerDelay2 = millis();
+        }
+      }
+    }else{
+      btn2_notPressYet = true;
+      timerOneSecond2 = millis();
+    }
 }
 
 void loop() {
-    increment(button1_pin);
-    decrement(button2_pin);
+    btn1();
+    btn2();
 }
