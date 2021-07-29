@@ -39,6 +39,14 @@ void setup() {
   pinMode(data_pin, OUTPUT);
 }
 
+int exponent(int base, int exponent){
+  int result = 1;
+  for(int i = 0; i < exponent; i++){
+    result *= base;
+  }
+  return result;
+}
+
 void writeGlyphBitmask(byte glyph, byte pos_bitmask){
   digitalWrite(latch_pin, LOW);
   shiftOut( data_pin, clock_pin, MSBFIRST, glyph);
@@ -50,25 +58,19 @@ void btn3_ChangePosition(){
   currentState3 = digitalRead(button3_pin);
   if(lastState3 == OFF && currentState3 == ON){
       actualBitMaskPosition++;
-      actualBitMaskPosition%=4;
+      actualBitMaskPosition%=4; // @tom: :(
   }
   // save the the last state
   lastState3 = currentState3;
 }
 
 void increaseNumber(byte actualBitMaskPosition){
-  if(actualBitMaskPosition == 0) ourTotalNumber += 1;
-  if(actualBitMaskPosition == 1) ourTotalNumber += 10;
-  if(actualBitMaskPosition == 2) ourTotalNumber += 100;
-  if(actualBitMaskPosition == 3) ourTotalNumber += 1000;
+  ourTotalNumber += exponent(10, actualBitMaskPosition);
   if(ourTotalNumber > 9999) ourTotalNumber -= 10000;
 }
 
 void decreaseNumber(byte actualBitMaskPosition){
-  if(actualBitMaskPosition == 0) ourTotalNumber -= 1;
-  if(actualBitMaskPosition == 1) ourTotalNumber -= 10;
-  if(actualBitMaskPosition == 2) ourTotalNumber -= 100;
-  if(actualBitMaskPosition == 3) ourTotalNumber -= 1000;
+  ourTotalNumber -= exponent(10, actualBitMaskPosition);
   if(ourTotalNumber < 0) ourTotalNumber += 10000; 
 }
 
@@ -91,15 +93,7 @@ void btn2_Decrement(){
 
 void displayNumberCifer(){  
   byte i = 0;
-  if(actualBitMaskPosition == 0)
-    i = ourTotalNumber % 10;
-  if(actualBitMaskPosition == 1) 
-    i = ourTotalNumber / 10 % 10;
-  if(actualBitMaskPosition == 2) 
-    i = ourTotalNumber / 100 % 10;
-  if(actualBitMaskPosition == 3) 
-    i = ourTotalNumber / 1000;
-  
+  i = ourTotalNumber / exponent(10, actualBitMaskPosition) % 10;  
   writeGlyphBitmask(segmentMap[i], pos_bitmask[actualBitMaskPosition]);
 }
 
