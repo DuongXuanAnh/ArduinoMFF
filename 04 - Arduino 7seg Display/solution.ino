@@ -28,78 +28,91 @@ int lastState1, lastState2, lastState3 = ON;  // the previous state from the inp
 int currentState1, currentState2, currentState3;     // the current reading from the input pin
 //-----------------------------------------------------------------------
 
-void setup() {
-//   Serial.begin(9600);
-  for (int i = 0; i < buttonPinsCount; ++i) {
-    pinMode(buttonPins[i], INPUT);
+struct DisplayNumberHandler{
+
+  void displaySetUp(){
+    pinMode(latch_pin, OUTPUT);
+    pinMode(clock_pin, OUTPUT);
+    pinMode(data_pin, OUTPUT);
+  }
+  
+  int exponent(int base, int exponent){
+    int result = 1;
+    for(int i = 0; i < exponent; i++){
+      result *= base;
+    }
+    return result;
+  }
+  
+  void increaseNumber(byte actualBitMaskPosition){
+  ourTotalNumber += exponent(10, actualBitMaskPosition);
+  if(ourTotalNumber > 9999) ourTotalNumber -= 10000;
+  }
+  
+  void decreaseNumber(byte actualBitMaskPosition){
+    ourTotalNumber -= exponent(10, actualBitMaskPosition);
+    if(ourTotalNumber < 0) ourTotalNumber += 10000; 
+  }
+  
+  void displayNumberCifer(){  
+    byte i = 0;
+    i = ourTotalNumber / exponent(10, actualBitMaskPosition) % 10;  
+    writeGlyphBitmask(segmentMap[i], pos_bitmask[actualBitMaskPosition]);
   }
 
-  pinMode(latch_pin, OUTPUT);
-  pinMode(clock_pin, OUTPUT);
-  pinMode(data_pin, OUTPUT);
-}
-
-int exponent(int base, int exponent){
-  int result = 1;
-  for(int i = 0; i < exponent; i++){
-    result *= base;
-  }
-  return result;
-}
-
-void writeGlyphBitmask(byte glyph, byte pos_bitmask){
+  void writeGlyphBitmask(byte glyph, byte pos_bitmask){
   digitalWrite(latch_pin, LOW);
   shiftOut( data_pin, clock_pin, MSBFIRST, glyph);
   shiftOut( data_pin, clock_pin, MSBFIRST, pos_bitmask);
   digitalWrite(latch_pin, HIGH);
 }
 
-void btn3_ChangePosition(){
-  currentState3 = digitalRead(button3_pin);
-  if(lastState3 == OFF && currentState3 == ON){
-      actualBitMaskPosition++;
-      actualBitMaskPosition%=4; // @tom: :(
-  }
-  // save the the last state
-  lastState3 = currentState3;
-}
+}displayNumber;
 
-void increaseNumber(byte actualBitMaskPosition){
-  ourTotalNumber += exponent(10, actualBitMaskPosition);
-  if(ourTotalNumber > 9999) ourTotalNumber -= 10000;
-}
+struct Buttons{
+    void setUpButton(){
+      for (int i = 0; i < buttonPinsCount; ++i) {
+        pinMode(buttonPins[i], INPUT);
+      }
+    }
 
-void decreaseNumber(byte actualBitMaskPosition){
-  ourTotalNumber -= exponent(10, actualBitMaskPosition);
-  if(ourTotalNumber < 0) ourTotalNumber += 10000; 
-}
+    void btn1_Increment(){
+    currentState1 = digitalRead(button1_pin);
+    if(lastState1 == OFF && currentState1 == ON){
+      displayNumber.increaseNumber(actualBitMaskPosition);
+    }
+    lastState1 = currentState1;
+    }
+    
+    void btn2_Decrement(){
+      currentState2 = digitalRead(button2_pin);  
+      if(lastState2 == OFF && currentState2 == ON){
+         displayNumber.decreaseNumber(actualBitMaskPosition);
+      }
+       
+      lastState2 = currentState2;
+    }
 
-void btn1_Increment(){
-  currentState1 = digitalRead(button1_pin);
-  if(lastState1 == OFF && currentState1 == ON)
-    increaseNumber(actualBitMaskPosition);
+    void btn3_ChangePosition(){
+    currentState3 = digitalRead(button3_pin);
+    if(lastState3 == OFF && currentState3 == ON){
+        actualBitMaskPosition++;
+        actualBitMaskPosition %= displayDigits;
+    }
+    lastState3 = currentState3;
+    }
+}button;
 
-  lastState1 = currentState1;
-}
-
-void btn2_Decrement(){
-  currentState2 = digitalRead(button2_pin);  
-  if(lastState2 == OFF && currentState2 == ON)        
-    decreaseNumber(actualBitMaskPosition);
- 
-  // save the the last state
-  lastState2 = currentState2;
-}
-
-void displayNumberCifer(){  
-  byte i = 0;
-  i = ourTotalNumber / exponent(10, actualBitMaskPosition) % 10;  
-  writeGlyphBitmask(segmentMap[i], pos_bitmask[actualBitMaskPosition]);
+void setup() {
+//   Serial.begin(9600);
+  displayNumber.displaySetUp();
+  button.setUpButton(); 
+  
 }
 
 void loop() {
-     displayNumberCifer();
-     btn3_ChangePosition();
-     btn1_Increment(); 
-     btn2_Decrement();      
+     displayNumber.displayNumberCifer();
+     button.btn1_Increment(); 
+     button.btn2_Decrement();
+     button.btn3_ChangePosition();      
 }
