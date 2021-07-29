@@ -65,23 +65,24 @@ void writeGlyphBitmask(byte glyph, byte pos_bitmask, int dot){
   digitalWrite(latch_pin, HIGH);
 }
 
+ int exponent(int base, int exponent){
+    int result = 1;
+    for(int i = 0; i < exponent; i++){
+      result *= base;
+    }
+    return result;
+  }
+
 void DisplayNumber(){
-   if(ledPosition == 0){
-     unsigned long num_to_show = ourNumber%10;
-     writeGlyphBitmask(segmentMap[num_to_show], pos_bitmask[0], 0); 
-   }
+  
+   unsigned long num_to_show = ourNumber % exponent(10, ledPosition+1) / exponent(10, ledPosition);
+  
    if(ledPosition == 1){
-     unsigned long num_to_show = (ourNumber%100)/10;
-     writeGlyphBitmask(segmentMap[num_to_show], pos_bitmask[1], 1); 
+     writeGlyphBitmask(segmentMap[num_to_show], pos_bitmask[ledPosition], 1); // nase tecka
+   }else{
+     writeGlyphBitmask(segmentMap[num_to_show], pos_bitmask[ledPosition], 0); 
    }
-   if(ledPosition == 2){
-     unsigned long num_to_show = (ourNumber%1000)/100;
-     writeGlyphBitmask(segmentMap[num_to_show], pos_bitmask[2], 0); 
-   }
-   if(ledPosition == 3){
-     unsigned long num_to_show = ourNumber/1000;
-     writeGlyphBitmask(segmentMap[num_to_show], pos_bitmask[3], 0); 
-   }         
+      
 }
 
 void btn1_Start_Stop(){
