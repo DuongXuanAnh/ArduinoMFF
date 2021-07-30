@@ -28,8 +28,8 @@ int lastState1, lastState2, lastState3 = ON;  // the previous state from the inp
 int currentState1, currentState2, currentState3;     // the current reading from the input pin
 //-----------------------------------------------------------------------
 
-struct DisplayNumberHandler{
-
+struct OurDisplay{
+  
   void displaySetUp(){
     pinMode(latch_pin, OUTPUT);
     pinMode(clock_pin, OUTPUT);
@@ -67,10 +67,10 @@ struct DisplayNumberHandler{
   digitalWrite(latch_pin, HIGH);
 }
 
-}displayNumber;
-
+}ourDisplay;
+//-------------------------------------------------------------------------------
 struct Buttons{
-    void setUpButton(){
+    void SetUp(){
       for (int i = 0; i < buttonPinsCount; ++i) {
         pinMode(buttonPins[i], INPUT);
       }
@@ -79,7 +79,7 @@ struct Buttons{
     void btn1_Increment(){
     currentState1 = digitalRead(button1_pin);
     if(lastState1 == OFF && currentState1 == ON){
-      displayNumber.increaseNumber(actualBitMaskPosition);
+      ourDisplay.increaseNumber(actualBitMaskPosition);
     }
     lastState1 = currentState1;
     }
@@ -87,7 +87,7 @@ struct Buttons{
     void btn2_Decrement(){
       currentState2 = digitalRead(button2_pin);  
       if(lastState2 == OFF && currentState2 == ON){
-         displayNumber.decreaseNumber(actualBitMaskPosition);
+         ourDisplay.decreaseNumber(actualBitMaskPosition);
       }
        
       lastState2 = currentState2;
@@ -98,21 +98,23 @@ struct Buttons{
     if(lastState3 == OFF && currentState3 == ON){
         actualBitMaskPosition++;
         actualBitMaskPosition %= displayDigits;
+      }
+      lastState3 = currentState3;
     }
-    lastState3 = currentState3;
-    }
-}button;
 
+    void Handler(){
+       btn1_Increment(); 
+       btn2_Decrement();
+       btn3_ChangePosition();  
+    }
+}buttons;
+//-------------------------------------------------------------------
 void setup() {
-//   Serial.begin(9600);
-  displayNumber.displaySetUp();
-  button.setUpButton(); 
-  
+  ourDisplay.displaySetUp();
+  buttons.SetUp(); 
 }
 
 void loop() {
-     displayNumber.displayNumberCifer();
-     button.btn1_Increment(); 
-     button.btn2_Decrement();
-     button.btn3_ChangePosition();      
+     ourDisplay.displayNumberCifer();
+     buttons.Handler();   
 }
